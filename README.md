@@ -36,16 +36,68 @@ role: Enum / Choice ('client' ou 'vendor').
 interests: Relacionamento Many-to-Many com a entidade Category (aplicável apenas se o usuário for um cliente).
 Store (loja): cas o usuário seja um vendedor, este é o relacionamento one-to-one com a tabela de lojas, trazendo o id da loja específica do vendedor.
 
-Store (Loja):
+Store (Loja): Representa qualquer loja cadastrada no sistema, que está associada a um vendedor.
+Atributos:
+
 id: Chave primária (UUID).
-vendor: Chave estrangeira (1/1) vinculada ao User.
+vendor: Chave estrangeira (1/1, tipo UUID) vinculada ao User.
 name: String (Nome comercial).
 description: String (Descrição do negócio).
-categories: Relacionamento Many-to-Many com Category.
+categories: Relacionamento Many-to-Many com Category. Categorias de produtos vendidos na loja.
 cep: String.
-street: String (Preenchido via API).
-number: String (Informado pelo lojista).
-complement: String (Opcional).
-neighborhood: String (Preenchido via API).
-city: String (Preenchido via API).
-state: String (Preenchido via API).
+street: String (Preenchido via API). Rua onde se localiza a loja.
+number: String (Informado pelo lojista). Número.
+complement: String (Opcional). Complemento no endereço.
+neighborhood: String (Preenchido via API). Bairro.
+city: String (Preenchido via API). Cidade.
+state: String (Preenchido via API). Estado.
+
+Category (Categoria): Representa qualquer categoria de produto vendido.
+Atributos:
+
+id: Chave primária (UUID).
+name: String (Nome da categoria, ex: "Alimentação").
+slug: String (Identificador amigável para URLs, ex: alimentacao).
+description: String (Breve descrição do que abrange a categoria).
+
+Product (Produto):
+id: Chave primária (UUID).
+store: Chave estrangeira (1/N): relacionamento com a tabela de lojas. Uma loja pode ter vários produtos, mas um produto pertence a apenas uma loja.
+name: String (Nome do produto).
+category: Chave estrangeira (1/1): relacionamento com Category (um produto pertence a uma categoria).
+description: String (Descrição detalhada sobre o que é esse produto.
+price: Decimal (Preço unitário do produto em reais).
+stock: Integer (Quantidade disponível em estoque por estabelecimento).
+
+Order (Pedido): representa qualquer pedido de compra feito pelo cliente.
+Atributos:
+
+id: UUID (Chave primária).
+customer: Chave estrangeira vinculada ao User (o cliente).
+store: Chave estrangeira vinculada à Store (a loja).
+Products: relacionamento n/n com Order, feito através de uma tabela associativa Order_item. Representa todos os produtos que serão comprados.
+total_price: Decimal (Valor total acumulado dos itens do pedido).
+status: Enum / Choice ('pending', 'approved', 'rejected', 'completed').
+created_at: Timestamp (Data e hora da geração do pedido).
+
+Order_item (Itens do Pedido): Tabela intermediária que conecta o pedido com os produtos específicos que o cliente vai comprar, e as quantidades.
+
+id: UUID.
+order: Chave estrangeira vinculada ao Order.
+product: Chave estrangeira vinculada ao Product (o produto comprado).
+quantity: Integer (Quantidade daquele produto específico no pedido).
+unit_price: Decimal (O preço do produto no momento da compra, garantindo histórico imutável caso o lojista altere o preço do produto no futuro).
+
+Store Inventory: representa o estoque de produtos da loja.
+Atributos:
+
+Id: uuid (id do estoque).
+Store: relacionamento 1/1 com a tabela de lojas. Uma loja contém o seu próprio registro de movimentações dos produtos.
+Products: relacionamento n/n com a tabela de produtos, pois um produto pode estar no estoque de vários estabelecimentos, e um estoque contém vários produtos. Este relacionamento se dará através de uma tabela intermediária, stock_item.
+
+Stock_item: relacionamento entre produto e estoque.
+Atributos:
+
+Product_id: uuid (id do produto específico, chave estrangeira).
+Stock_id: uuid (chave estrangeira, id do registro de estoque específico).
+Quantity (integer): quantidade do produto nesse estoque específico.
