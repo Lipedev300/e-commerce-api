@@ -25,7 +25,7 @@ RNF04 - Ambiente Isolado via Docker: O banco de dados e os serviços de suporte 
 
 # Modelagem de dados (principais entidades):
  
- 1. User (Usuário): Representa qualquer pessoa cadastrada no sistema.
+ User (Usuário): Representa qualquer pessoa cadastrada no sistema.
 Atributos:
 
 id: Chave primária (UUID ou AutoField).
@@ -34,6 +34,7 @@ email: String (Único, usado para login).
 phone: String (Telefone/WhatsApp, ex: com DDI e DDD).
 role: Enum / Choice ('client' ou 'vendor').
 interests: Relacionamento Many-to-Many com a entidade Category (aplicável apenas se o usuário for um cliente).
+
 Store (loja): cas o usuário seja um vendedor, este é o relacionamento one-to-one com a tabela de lojas, trazendo o id da loja específica do vendedor.
 
 Store (Loja): Representa qualquer loja cadastrada no sistema, que está associada a um vendedor.
@@ -78,6 +79,9 @@ store: Chave estrangeira vinculada à Store (a loja).
 Products: relacionamento n/n com Order, feito através de uma tabela associativa Order_item. Representa todos os produtos que serão comprados.
 total_price: Decimal (Valor total acumulado dos itens do pedido).
 status: Enum / Choice ('pending', 'approved', 'rejected', 'completed').
+payment_status: Enum/Choice ('pending', 'paid', 'failed', 'refunded'). Controla se o PIX foi pago.
+pix_qr_code ou pix_copy_paste: String (Opcional/Texto). Armazena o texto do PIX gerado para o cliente pagar.
+paid_at: Timestamp (Data e hora em que o pagamento foi confirmado).
 created_at: Timestamp (Data e hora da geração do pedido).
 
 Order_item (Itens do Pedido): Tabela intermediária que conecta o pedido com os produtos específicos que o cliente vai comprar, e as quantidades.
@@ -101,3 +105,21 @@ Atributos:
 Product_id: uuid (id do produto específico, chave estrangeira).
 Stock_id: uuid (chave estrangeira, id do registro de estoque específico).
 Quantity (integer): quantidade do produto nesse estoque específico.
+
+# Telas.
+
+## Fluxo do Cliente
+Tela de Autenticação: Login / Cadastro (Escolha entre perfil de Cliente ou Vendedor).
+Tela Inicial / Home (Busca): Barra de pesquisa de produtos e lista de lojas próximas, baseado na localização do usuário.
+Tela de Detalhes da Loja: Informa endereço (Rua, Número, Bairro), catálogo de produtos e botão para ver o estoque.
+Tela de detalhes do produto: mostra nome, descrição, preço e botão para adicionar ao carrinho.
+Tela de Carrinho / Checkout: Resumo dos itens, preço total e botão para enviar pedido para a Loja.
+Tela de Meus Pedidos: Lista os pedidos feitos e os status atuais (pending, approved, paid, completed) com o QR Code/Pix de pagamento quando aprovado.
+
+## Fluxo do Vendedor
+
+Tela de Autenticação: Login / Cadastro.
+Tela de Gerenciamento da Loja: Cadastro/Edição dos dados de endereço (CEP preenchendo rua e bairro), nome e descrição.
+Tela de Catálogo e Estoque: Lista de produtos da loja, adição de novos produtos e controle da quantidade.
+Tela de Gestão de Pedidos: Lista de pedidos recebidos dos clientes, com botões de Aprovar ou Recusar.
+
